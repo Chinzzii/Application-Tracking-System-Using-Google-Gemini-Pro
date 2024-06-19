@@ -1,5 +1,7 @@
 from dotenv import load_dotenv
 import streamlit as st
+import base64
+import io
 import os
 from PIL import Image 
 import pdf2image
@@ -16,22 +18,23 @@ def get_gemini_response(input, pdf_content, prompt):
     return response.text
 
 def input_pdf_setup(upload_file):
-    # Convert PDF to Image
-    images = pdf2image.convert_from_bytes(upload_file.read())
-    first_page = images[0]
+    if upload_file is not None:
+        # Convert PDF to Image
+        images = pdf2image.convert_from_bytes(upload_file.read())
+        first_page = images[0]
 
-    # Convert to Bytes
-    img_byte_arr = io.BytesIO()
-    first_page.save(img_byte_arr, fromat="JPEG")
-    img_byte_arr = img_byte_arr.getvalue()
-    pdf_parts = [
-        {
-            "mime_type": "image/jpeg",
-            "data": base64.b64encode(img_byte_arr).decode()
-        }
-    ]
+        # Convert to Bytes
+        img_byte_arr = io.BytesIO()
+        first_page.save(img_byte_arr, format="JPEG")
+        img_byte_arr = img_byte_arr.getvalue()
+        pdf_parts = [
+            {
+                "mime_type": "image/jpeg",
+                "data": base64.b64encode(img_byte_arr).decode()
+            }
+        ]
 
-    return pdf_parts
+        return pdf_parts
     else:
         raise FileNotFoundError("No file uploaded")
 
